@@ -4,7 +4,7 @@ import '../models/categoryModel.dart';
 import '../models/blogModel.dart';
 import '../services/apiService.dart';
 
-// Halaman yang menampilkan kategori dari backend dan membuka artikel terkait.
+// Halaman kategori artikel Vivilia
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
 
@@ -13,10 +13,8 @@ class CategoriesPage extends StatefulWidget {
 }
 
 class _CategoriesPageState extends State<CategoriesPage> {
-  // Kategori yang tersedia untuk dipilih user.
   List<Category> categories = [];
 
-  // Menentukan apakah daftar kategori masih menunggu respons API.
   bool isLoading = true;
 
   @override
@@ -28,7 +26,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   Future<void> getCategories() async {
     try {
-      // Mengambil kategori saat halaman pertama kali ditampilkan.
       final result = await ApiService().getCategories();
 
       setState(() {
@@ -37,8 +34,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
         isLoading = false;
       });
     } catch (error) {
-      print(error);
-
       setState(() {
         isLoading = false;
       });
@@ -46,7 +41,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
   }
 
   void openCategory(Category category) {
-    // Meneruskan kategori terpilih ke halaman artikel berdasarkan kategori.
     Navigator.push(
       context,
 
@@ -58,60 +52,174 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Categories",
+    final theme = Theme.of(context);
 
-          style: Theme.of(context).textTheme.titleLarge,
+    return Scaffold(
+      backgroundColor: theme.brightness == Brightness.light
+          ? const Color(0xffF7F7F7)
+          : Colors.black,
+
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+
+            children: [
+              const SizedBox(height: 25),
+
+              Text(
+                "Categories",
+
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              Text(
+                "Explore articles based on topics",
+
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+              ),
+
+              const SizedBox(height: 30),
+
+              Expanded(
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : categories.isEmpty
+                    ? const Center(child: Text("No categories available"))
+                    : ListView.builder(
+                        itemCount: categories.length,
+
+                        itemBuilder: (context, index) {
+                          final category = categories[index];
+
+                          return CategoryCard(
+                            category: category,
+
+                            onTap: () {
+                              openCategory(category);
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
-
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : categories.isEmpty
-          ? Center(
-              child: Text(
-                "No categories available",
-
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-
-              itemCount: categories.length,
-
-              itemBuilder: (context, index) {
-                final category = categories[index];
-
-                // Setiap kategori menjadi pintu masuk ke daftar artikelnya.
-                return Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.category),
-
-                    title: Text(
-                      category.name,
-
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-
-                    onTap: () {
-                      openCategory(category);
-                    },
-                  ),
-                );
-              },
-            ),
     );
   }
 }
 
-// Menampilkan artikel yang difilter berdasarkan kategori yang dipilih.
+// Card kategori Vivilia
+class CategoryCard extends StatelessWidget {
+  final Category category;
+
+  final VoidCallback onTap;
+
+  const CategoryCard({super.key, required this.category, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: onTap,
+
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+
+        padding: const EdgeInsets.all(20),
+
+        decoration: BoxDecoration(
+          color: theme.brightness == Brightness.light
+              ? Colors.white
+              : const Color(0xff181818),
+
+          borderRadius: BorderRadius.circular(22),
+
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+
+              blurRadius: 12,
+
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+          children: [
+            Row(
+              children: [
+                Container(
+                  height: 42,
+
+                  width: 42,
+
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.light
+                        ? const Color(0xffF0F0F0)
+                        : const Color(0xff252525),
+
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+
+                  child: const Icon(Icons.category_outlined, size: 22),
+                ),
+
+                const SizedBox(width: 14),
+
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+                    Text(
+                      category.name,
+
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 5),
+
+                    const Text(
+                      "Explore articles",
+
+                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+
+              size: 17,
+
+              color: Colors.grey,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Halaman artikel berdasarkan kategori
 class CategoryArticlePage extends StatefulWidget {
-  // Kategori ini menjadi parameter filter untuk permintaan artikel.
   final Category category;
 
   const CategoryArticlePage({super.key, required this.category});
@@ -121,10 +229,8 @@ class CategoryArticlePage extends StatefulWidget {
 }
 
 class _CategoryArticlePageState extends State<CategoryArticlePage> {
-  // Hasil artikel dari API untuk kategori yang sedang dibuka.
   List<Blog> blogs = [];
 
-  // Mengendalikan tampilan loading selama artikel kategori dimuat.
   bool isLoading = true;
 
   @override
@@ -136,7 +242,6 @@ class _CategoryArticlePageState extends State<CategoryArticlePage> {
 
   Future<void> getArticles() async {
     try {
-      // Filter categoryId menjaga daftar hanya berisi artikel kategori aktif.
       final result = await ApiService().getPosts(
         categoryId: widget.category.id,
       );
@@ -147,8 +252,6 @@ class _CategoryArticlePageState extends State<CategoryArticlePage> {
         isLoading = false;
       });
     } catch (error) {
-      print(error);
-
       setState(() {
         isLoading = false;
       });
@@ -157,66 +260,107 @@ class _CategoryArticlePageState extends State<CategoryArticlePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.category.name,
+    final theme = Theme.of(context);
 
-          style: Theme.of(context).textTheme.titleLarge,
+    return Scaffold(
+      backgroundColor: theme.brightness == Brightness.light
+          ? const Color(0xffF7F7F7)
+          : Colors.black,
+
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+
+            children: [
+              const SizedBox(height: 25),
+
+              Text(
+                widget.category.name,
+
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              const Text(
+                "Articles in this category",
+
+                style: TextStyle(color: Colors.grey),
+              ),
+
+              const SizedBox(height: 25),
+
+              Expanded(
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : blogs.isEmpty
+                    ? const Center(child: Text("No articles found"))
+                    : ListView.builder(
+                        itemCount: blogs.length,
+
+                        itemBuilder: (context, index) {
+                          final blog = blogs[index];
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+
+                            padding: const EdgeInsets.all(18),
+
+                            decoration: BoxDecoration(
+                              color: theme.brightness == Brightness.light
+                                  ? Colors.white
+                                  : const Color(0xff181818),
+
+                              borderRadius: BorderRadius.circular(22),
+                            ),
+
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+
+                              children: [
+                                Text(
+                                  blog.title,
+
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                Text(
+                                  blog.content,
+
+                                  maxLines: 2,
+
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                Text(
+                                  "By ${blog.author}",
+
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
-
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : blogs.isEmpty
-          ? Center(
-              child: Text(
-                "No articles found",
-
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-
-              itemCount: blogs.length,
-
-              itemBuilder: (context, index) {
-                final blog = blogs[index];
-
-                return Card(
-                  child: ListTile(
-                    title: Text(
-                      blog.title,
-
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-
-                      children: [
-                        Text(
-                          "Author: ${blog.author}",
-
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-
-                        Text(
-                          blog.content,
-
-                          maxLines: 2,
-
-                          overflow: TextOverflow.ellipsis,
-
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
     );
   }
 }

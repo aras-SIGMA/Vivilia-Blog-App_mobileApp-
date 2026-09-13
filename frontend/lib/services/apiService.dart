@@ -150,7 +150,7 @@ class ApiService {
     print("STATUS CREATE: ${response.statusCode}");
     print("BODY CREATE: ${response.body}");
 
-    if (response.statusCode != 201) {
+    if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception("Gagal memperbarui artikel");
     }
   }

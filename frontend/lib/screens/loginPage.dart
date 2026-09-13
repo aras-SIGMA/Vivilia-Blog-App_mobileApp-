@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/authProvider.dart';
+
 import 'registerPage.dart';
 
-// Halaman autentikasi yang mengirim kredensial user ke AuthProvider.
-// Login yang berhasil mengganti rute saat ini dengan halaman utama aplikasi.
+// Halaman login pengguna Vivilia
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -14,12 +14,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // Controller menyimpan input yang akan diteruskan ke proses login.
   final emailController = TextEditingController();
 
   final passwordController = TextEditingController();
 
-  // Mencegah pengiriman berulang dan memberi umpan balik selama proses login.
   bool isLoading = false;
 
   Future<void> login() async {
@@ -27,9 +25,9 @@ class _LoginPageState extends State<LoginPage> {
       isLoading = true;
     });
 
-    // AuthProvider menangani komunikasi autentikasi dan hasil login.
     final success = await context.read<AuthProvider>().login(
       email: emailController.text,
+
       password: passwordController.text,
     );
 
@@ -39,7 +37,6 @@ class _LoginPageState extends State<LoginPage> {
       isLoading = false;
     });
 
-    // User berhasil diarahkan ke halaman utama; kegagalan ditampilkan sebagai pesan.
     if (success) {
       Navigator.pushReplacementNamed(context, "/main");
     } else {
@@ -51,74 +48,156 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Login", style: Theme.of(context).textTheme.titleLarge),
-      ),
+      backgroundColor: theme.brightness == Brightness.light
+          ? const Color(0xffF7F7F7)
+          : Colors.black,
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 25),
 
-        child: Column(
-          children: [
-            TextField(
-              controller: emailController,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
 
-              decoration: const InputDecoration(
-                labelText: "Email",
+            crossAxisAlignment: CrossAxisAlignment.start,
 
-                prefixIcon: Icon(Icons.email),
+            children: [
+              Center(
+                child: Text(
+                  "Vivilia",
+
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
 
-            const SizedBox(height: 15),
+              const SizedBox(height: 50),
 
-            TextField(
-              controller: passwordController,
+              Text(
+                "Welcome Back 👋",
 
-              obscureText: true,
-
-              decoration: const InputDecoration(
-                labelText: "Password",
-
-                prefixIcon: Icon(Icons.lock),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
 
-            const SizedBox(height: 30),
+              const SizedBox(height: 6),
 
-            SizedBox(
-              width: double.infinity,
+              Text(
+                "Login to continue reading amazing articles",
 
-              child: ElevatedButton(
-                onPressed: isLoading ? null : login,
-
-                child: isLoading
-                    ? const CircularProgressIndicator()
-                    : Text(
-                        "Login",
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-              ),
-            ),
-
-            // Menyediakan jalur navigasi menuju pendaftaran akun baru.
-            TextButton(
-              onPressed: () {
-                Navigator.push(
+                style: Theme.of(
                   context,
-
-                  MaterialPageRoute(builder: (context) => const RegisterPage()),
-                );
-              },
-
-              child: Text(
-                "Belum punya akun? Register",
-
-                style: Theme.of(context).textTheme.bodyMedium,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 35),
+
+              // Email
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.brightness == Brightness.light
+                      ? Colors.white
+                      : const Color(0xff181818),
+
+                  borderRadius: BorderRadius.circular(18),
+                ),
+
+                child: TextField(
+                  controller: emailController,
+
+                  decoration: const InputDecoration(
+                    hintText: "Email",
+
+                    prefixIcon: Icon(Icons.email_outlined),
+
+                    border: InputBorder.none,
+
+                    contentPadding: EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              // Password
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.brightness == Brightness.light
+                      ? Colors.white
+                      : const Color(0xff181818),
+
+                  borderRadius: BorderRadius.circular(18),
+                ),
+
+                child: TextField(
+                  controller: passwordController,
+
+                  obscureText: true,
+
+                  decoration: const InputDecoration(
+                    hintText: "Password",
+
+                    prefixIcon: Icon(Icons.lock_outline),
+
+                    border: InputBorder.none,
+
+                    contentPadding: EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              SizedBox(
+                width: double.infinity,
+
+                height: 52,
+
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : login,
+
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 22,
+
+                          width: 22,
+
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text("Login"),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+
+                      MaterialPageRoute(
+                        builder: (context) => const RegisterPage(),
+                      ),
+                    );
+                  },
+
+                  child: const Text("Belum punya akun? Register"),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

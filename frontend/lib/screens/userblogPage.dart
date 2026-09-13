@@ -1,121 +1,195 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/themeProvider.dart';
 import '../providers/authProvider.dart';
+
 import 'loginPage.dart';
 
-// Halaman profil dan preferensi user.
-// Menampilkan data akun, mengubah tema, serta menyediakan login atau logout.
+// Halaman profil pengguna Vivilia
 class UserPage extends StatelessWidget {
   const UserPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Provider dipantau agar profil dan kontrol autentikasi selalu mutakhir.
     final auth = context.watch<AuthProvider>();
+
     final themeProvider = context.watch<ThemeProvider>();
+
     final user = auth.user;
 
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text("User", style: Theme.of(context).textTheme.titleLarge),
-      ),
+      backgroundColor: theme.brightness == Brightness.light
+          ? const Color(0xffF7F7F7)
+          : Colors.black,
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
 
-        child: Column(
-          children: [
-            // Avatar menggunakan ikon default karena aplikasi belum memuat foto profil.
-            const CircleAvatar(radius: 45, child: Icon(Icons.person, size: 50)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
 
-            const SizedBox(height: 15),
+            children: [
+              const SizedBox(height: 25),
 
-            Text(
-              user?.name ?? "Guest User",
+              Align(
+                alignment: Alignment.centerLeft,
 
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+                child: Text(
+                  "Profile",
 
-            const SizedBox(height: 5),
-
-            Text(
-              user?.email ?? "guest@example.com",
-
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-
-            const SizedBox(height: 30),
-
-            // Pengaturan tema dipisahkan sebagai kontrol state yang dapat diubah langsung.
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.settings),
-
-                title: Text(
-                  "Settings",
-
-                  style: Theme.of(context).textTheme.bodyLarge,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               ),
-            ),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 40),
 
-            // Aksi terakhir bergantung pada status autentikasi user saat ini.
-            Card(
-              child: SwitchListTile(
-                secondary: const Icon(Icons.dark_mode),
+              const CircleAvatar(
+                radius: 45,
 
-                title: Text(
-                  "Theme",
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-
-                subtitle: Text(
-                  themeProvider.isDarkMode ? "Dark Mode" : "Light Mode",
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-
-                value: themeProvider.isDarkMode,
-
-                onChanged: (value) {
-                  themeProvider.toggleTheme(value);
-                },
+                child: Icon(Icons.person_rounded, size: 50),
               ),
-            ),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 15),
 
-            Card(
-              child: ListTile(
-                leading: Icon(auth.isLoggedIn ? Icons.logout : Icons.login),
+              Text(
+                user?.name ?? "Guest User",
 
-                title: Text(
-                  auth.isLoggedIn ? "Logout" : "Login",
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
 
-                  style: Theme.of(context).textTheme.bodyLarge,
+              const SizedBox(height: 5),
+
+              Text(
+                user?.email ?? "guest@example.com",
+
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+              ),
+
+              const SizedBox(height: 40),
+
+              // Theme
+              Container(
+                width: double.infinity,
+
+                decoration: BoxDecoration(
+                  color: theme.brightness == Brightness.light
+                      ? Colors.white
+                      : const Color(0xff181818),
+
+                  borderRadius: BorderRadius.circular(22),
+
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+
+                      blurRadius: 10,
+
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
 
-                onTap: () async {
-                  // User login diarahkan ke form login; user aktif dapat logout langsung.
-                  if (auth.isLoggedIn) {
-                    await auth.logout();
-                  } else {
-                    Navigator.push(
-                      context,
+                child: SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
 
-                      MaterialPageRoute(
-                        builder: (context) => const LoginPage(),
-                      ),
-                    );
-                  }
-                },
+                  secondary: const Icon(Icons.dark_mode_rounded),
+
+                  title: Text(
+                    "Theme",
+
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  subtitle: Text(
+                    themeProvider.isDarkMode ? "Dark Mode" : "Light Mode",
+                  ),
+
+                  value: themeProvider.isDarkMode,
+
+                  onChanged: (value) {
+                    themeProvider.toggleTheme(value);
+                  },
+                ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 15),
+
+              // Login / Logout
+              Container(
+                width: double.infinity,
+
+                decoration: BoxDecoration(
+                  color: theme.brightness == Brightness.light
+                      ? Colors.white
+                      : const Color(0xff181818),
+
+                  borderRadius: BorderRadius.circular(22),
+
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+
+                      blurRadius: 10,
+
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+
+                  leading: Icon(
+                    auth.isLoggedIn
+                        ? Icons.logout_rounded
+                        : Icons.login_rounded,
+                  ),
+
+                  title: Text(
+                    auth.isLoggedIn ? "Logout" : "Login",
+
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+
+                    size: 17,
+
+                    color: Colors.grey,
+                  ),
+
+                  onTap: () async {
+                    if (auth.isLoggedIn) {
+                      await auth.logout();
+                    } else {
+                      Navigator.push(
+                        context,
+
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPage(),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

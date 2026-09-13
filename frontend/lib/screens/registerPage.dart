@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/authProvider.dart';
+
 import 'loginPage.dart';
 
-// Halaman pendaftaran user baru sebelum user dapat masuk ke aplikasi.
+// Halaman registrasi pengguna Vivilia
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -13,7 +14,6 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  // Controller menampung data identitas dan kredensial dari formulir.
   final nameController = TextEditingController();
 
   final emailController = TextEditingController();
@@ -22,11 +22,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final confirmPasswordController = TextEditingController();
 
-  // Menonaktifkan tombol selama permintaan pendaftaran berlangsung.
   bool isLoading = false;
 
   Future<void> register() async {
-    // Validasi lokal mencegah pengiriman password yang tidak cocok ke server.
     if (passwordController.text != confirmPasswordController.text) {
       ScaffoldMessenger.of(
         context,
@@ -40,7 +38,6 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      // AuthProvider meneruskan data pendaftaran ke layanan autentikasi.
       await context.read<AuthProvider>().register(
         name: nameController.text,
 
@@ -55,7 +52,6 @@ class _RegisterPageState extends State<RegisterPage> {
         const SnackBar(content: Text("Register berhasil, silahkan login")),
       );
 
-      // Setelah berhasil, user diarahkan untuk login menggunakan akun baru.
       Navigator.pushReplacement(
         context,
 
@@ -74,104 +70,191 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Register", style: Theme.of(context).textTheme.titleLarge),
+  Widget inputField({
+    required TextEditingController controller,
+
+    required String hint,
+
+    required IconData icon,
+
+    bool obscure = false,
+  }) {
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.brightness == Brightness.light
+            ? Colors.white
+            : const Color(0xff181818),
+
+        borderRadius: BorderRadius.circular(18),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      child: TextField(
+        controller: controller,
 
+        obscureText: obscure,
+
+        decoration: InputDecoration(
+          hintText: hint,
+
+          prefixIcon: Icon(icon),
+
+          border: InputBorder.none,
+
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: theme.brightness == Brightness.light
+          ? const Color(0xffF7F7F7)
+          : Colors.black,
+
+      body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: nameController,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 25),
 
-                decoration: const InputDecoration(
-                  labelText: "Name",
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
 
-                  prefixIcon: Icon(Icons.person),
+              children: [
+                const SizedBox(height: 50),
+
+                Text(
+                  "Vivilia",
+
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 15),
+                const SizedBox(height: 45),
 
-              TextField(
-                controller: emailController,
+                Align(
+                  alignment: Alignment.centerLeft,
 
-                decoration: const InputDecoration(
-                  labelText: "Email",
+                  child: Text(
+                    "Create Account ✨",
 
-                  prefixIcon: Icon(Icons.email),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 15),
+                const SizedBox(height: 6),
 
-              TextField(
-                controller: passwordController,
+                Align(
+                  alignment: Alignment.centerLeft,
 
-                obscureText: true,
+                  child: Text(
+                    "Join Vivilia and start sharing your articles",
 
-                decoration: const InputDecoration(
-                  labelText: "Password",
-
-                  prefixIcon: Icon(Icons.lock),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 15),
+                const SizedBox(height: 35),
 
-              TextField(
-                controller: confirmPasswordController,
+                inputField(
+                  controller: nameController,
 
-                obscureText: true,
+                  hint: "Name",
 
-                decoration: const InputDecoration(
-                  labelText: "Confirm Password",
-
-                  prefixIcon: Icon(Icons.lock_outline),
+                  icon: Icons.person_outline,
                 ),
-              ),
 
-              const SizedBox(height: 30),
+                const SizedBox(height: 15),
 
-              SizedBox(
-                width: double.infinity,
+                inputField(
+                  controller: emailController,
 
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : register,
+                  hint: "Email",
 
-                  child: isLoading
-                      ? const CircularProgressIndicator()
-                      : Text(
-                          "Register",
-
-                          style: Theme.of(context).textTheme.labelLarge,
-                        ),
+                  icon: Icons.email_outlined,
                 ),
-              ),
 
-              // Memungkinkan user yang sudah memiliki akun kembali ke login.
-              TextButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
+                const SizedBox(height: 15),
 
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
-                  );
-                },
+                inputField(
+                  controller: passwordController,
 
-                child: Text(
-                  "Sudah punya akun? Login",
+                  hint: "Password",
 
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  icon: Icons.lock_outline,
+
+                  obscure: true,
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 15),
+
+                inputField(
+                  controller: confirmPasswordController,
+
+                  hint: "Confirm Password",
+
+                  icon: Icons.lock_reset,
+
+                  obscure: true,
+                ),
+
+                const SizedBox(height: 30),
+
+                SizedBox(
+                  width: double.infinity,
+
+                  height: 52,
+
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : register,
+
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 22,
+
+                            width: 22,
+
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text("Register"),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
+                  },
+
+                  child: const Text("Sudah punya akun? Login"),
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

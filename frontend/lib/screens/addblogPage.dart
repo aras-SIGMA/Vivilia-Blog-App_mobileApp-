@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/categoryModel.dart';
 import '../services/apiService.dart';
 
-// Halaman formulir untuk membuat artikel baru.
-// Callback digunakan agar halaman pemanggil dapat menyegarkan datanya.
+// Halaman membuat artikel baru Vivilia
 class AddBlogPage extends StatefulWidget {
-  // Dipanggil setelah artikel berhasil dibuat.
   final VoidCallback onArticleCreated;
 
   const AddBlogPage({super.key, required this.onArticleCreated});
@@ -16,21 +14,16 @@ class AddBlogPage extends StatefulWidget {
 }
 
 class AddBlogPageState extends State<AddBlogPage> {
-  // Controller menyimpan judul dan isi artikel yang sedang dibuat.
   final titleController = TextEditingController();
 
   final contentController = TextEditingController();
 
-  // Daftar kategori yang dimuat dari backend untuk pilihan user.
   List<Category> categories = [];
 
-  // Kategori wajib dipilih sebelum artikel dapat dikirim.
   int? selectedCategory;
 
-  // Status awal artikel baru adalah published dan dapat diubah ke draft.
   String selectedStatus = "published";
 
-  // Mengendalikan indikator proses dan mencegah submit berulang.
   bool isLoading = false;
 
   @override
@@ -42,7 +35,6 @@ class AddBlogPageState extends State<AddBlogPage> {
 
   Future<void> getCategories() async {
     try {
-      // Kategori dimuat saat halaman dibuka agar dropdown menggunakan data server.
       final result = await ApiService().getCategories();
 
       setState(() {
@@ -54,7 +46,6 @@ class AddBlogPageState extends State<AddBlogPage> {
   }
 
   Future<void> createArticle() async {
-    // Validasi dilakukan sebelum state loading dan request API dimulai.
     if (selectedCategory == null) {
       ScaffoldMessenger.of(
         context,
@@ -76,7 +67,6 @@ class AddBlogPageState extends State<AddBlogPage> {
     });
 
     try {
-      // Mengirim artikel baru dengan kategori, isi, dan status yang dipilih.
       await ApiService().createPost(
         categoryId: selectedCategory!,
 
@@ -93,7 +83,6 @@ class AddBlogPageState extends State<AddBlogPage> {
         const SnackBar(content: Text("Article created successfully")),
       );
 
-      // Beri tahu halaman sebelumnya sebelum menutup halaman formulir.
       widget.onArticleCreated();
 
       Navigator.pop(context);
@@ -112,140 +101,209 @@ class AddBlogPageState extends State<AddBlogPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Create Article",
+      backgroundColor: theme.brightness == Brightness.light
+          ? const Color(0xffF7F7F7)
+          : Colors.black,
 
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-
+      body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Input utama artikel: judul, kategori, isi, dan status.
-              TextField(
-                controller: titleController,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
 
-                decoration: InputDecoration(
-                  labelText: "Title",
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
 
-                  labelStyle: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
+              children: [
+                const SizedBox(height: 25),
 
-              const SizedBox(height: 12),
+                Text(
+                  "Create Article",
 
-              DropdownButtonFormField<int>(
-                value: selectedCategory,
-
-                decoration: InputDecoration(
-                  labelText: "Category",
-
-                  labelStyle: Theme.of(context).textTheme.bodyMedium,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
 
-                items: categories.map((category) {
-                  return DropdownMenuItem<int>(
-                    value: category.id,
+                const SizedBox(height: 6),
 
-                    child: Text(
-                      category.name,
+                Text(
+                  "Write your new article",
 
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  );
-                }).toList(),
-
-                onChanged: (value) {
-                  setState(() {
-                    selectedCategory = value;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: contentController,
-
-                maxLines: 5,
-
-                decoration: InputDecoration(
-                  labelText: "Content",
-
-                  labelStyle: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              DropdownButtonFormField<String>(
-                value: selectedStatus,
-
-                decoration: InputDecoration(
-                  labelText: "Status",
-
-                  labelStyle: Theme.of(context).textTheme.bodyMedium,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                 ),
 
-                items: [
-                  DropdownMenuItem(
-                    value: "draft",
+                const SizedBox(height: 30),
 
-                    child: Text(
-                      "Draft",
+                Container(
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.light
+                        ? Colors.white
+                        : const Color(0xff181818),
 
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                    borderRadius: BorderRadius.circular(18),
                   ),
 
-                  DropdownMenuItem(
-                    value: "published",
+                  child: TextField(
+                    controller: titleController,
 
-                    child: Text(
-                      "Published",
+                    decoration: const InputDecoration(
+                      hintText: "Title",
 
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      prefixIcon: Icon(Icons.title),
+
+                      border: InputBorder.none,
+
+                      contentPadding: EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
-                ],
-
-                onChanged: (value) {
-                  setState(() {
-                    selectedStatus = value!;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 25),
-
-              SizedBox(
-                width: double.infinity,
-
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : createArticle,
-
-                  child: isLoading
-                      ? const SizedBox(
-                          height: 20,
-
-                          width: 20,
-
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(
-                          "Create",
-
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 15),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.light
+                        ? Colors.white
+                        : const Color(0xff181818),
+
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+
+                  child: DropdownButtonFormField<int>(
+                    value: selectedCategory,
+
+                    decoration: const InputDecoration(
+                      hintText: "Category",
+
+                      prefixIcon: Icon(Icons.category_outlined),
+
+                      border: InputBorder.none,
+                    ),
+
+                    items: categories.map((category) {
+                      return DropdownMenuItem<int>(
+                        value: category.id,
+
+                        child: Text(category.name),
+                      );
+                    }).toList(),
+
+                    onChanged: (value) {
+                      setState(() {
+                        selectedCategory = value;
+                      });
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.light
+                        ? Colors.white
+                        : const Color(0xff181818),
+
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+
+                  child: TextField(
+                    controller: contentController,
+
+                    maxLines: 6,
+
+                    decoration: const InputDecoration(
+                      hintText: "Content",
+
+                      prefixIcon: Icon(Icons.article_outlined),
+
+                      border: InputBorder.none,
+
+                      contentPadding: EdgeInsets.all(16),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.light
+                        ? Colors.white
+                        : const Color(0xff181818),
+
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+
+                  child: DropdownButtonFormField<String>(
+                    value: selectedStatus,
+
+                    decoration: const InputDecoration(
+                      hintText: "Status",
+
+                      prefixIcon: Icon(Icons.publish_outlined),
+
+                      border: InputBorder.none,
+                    ),
+
+                    items: const [
+                      DropdownMenuItem(value: "draft", child: Text("Draft")),
+
+                      DropdownMenuItem(
+                        value: "published",
+
+                        child: Text("Published"),
+                      ),
+                    ],
+
+                    onChanged: (value) {
+                      setState(() {
+                        selectedStatus = value!;
+                      });
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                SizedBox(
+                  width: double.infinity,
+
+                  height: 52,
+
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : createArticle,
+
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 22,
+
+                            width: 22,
+
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text("Create"),
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+              ],
+            ),
           ),
         ),
       ),

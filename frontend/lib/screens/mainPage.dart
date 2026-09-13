@@ -11,8 +11,6 @@ import 'searchPage.dart';
 import 'userblogPage.dart';
 import 'addBlogPage.dart';
 
-// Halaman wadah utama yang mengatur perpindahan antar fitur aplikasi.
-// Tombol aksi mengarahkan user login ke halaman pembuatan artikel.
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -21,21 +19,24 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  // Menyimpan indeks halaman yang sedang aktif pada navigasi bawah.
+  // Menyimpan halaman yang sedang aktif
   int _bottomNavIndex = 0;
 
-  // Urutan ikon harus sama dengan urutan halaman pada daftar pages.
-  final iconList = <IconData>[
+  // Urutan icon harus sama dengan urutan halaman
+  final List<IconData> iconList = [
     Icons.home_rounded,
 
     Icons.category_rounded,
+
+    Icons.add_rounded,
 
     Icons.search_rounded,
 
     Icons.person_rounded,
   ];
 
-  // Membatasi pembuatan artikel hanya untuk user yang sudah terautentikasi.
+  // Membuka halaman tambah artikel
+  // Hanya user yang sudah login dapat membuat artikel
   void openCreateArticle() {
     final auth = context.read<AuthProvider>();
 
@@ -64,63 +65,93 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Daftar halaman dibuat saat build agar perubahan state provider tercermin.
+    // Memantau perubahan status login
+    context.watch<AuthProvider>();
 
     final pages = <Widget>[
       const HomePage(),
 
       const CategoriesPage(),
 
+      const SizedBox(),
+
       const SearchPage(),
 
       const UserPage(),
     ];
 
-    // Memastikan halaman utama dibangun ulang ketika status autentikasi berubah.
-
-    context.watch<AuthProvider>();
-
     return Scaffold(
+      // Membuat navbar terlihat mengambang
+      extendBody: true,
+
       body: pages[_bottomNavIndex],
 
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: theme.colorScheme.primary,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(left: 18, right: 18, bottom: 22),
 
-        elevation: 8,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(40),
 
-        onPressed: openCreateArticle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
 
-        child: const Icon(Icons.add_rounded, size: 32),
-      ),
+                blurRadius: 20,
 
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
 
-      bottomNavigationBar: AnimatedBottomNavigationBar(
-        icons: iconList,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(40),
 
-        activeIndex: _bottomNavIndex,
+            child: AnimatedBottomNavigationBar(
+              icons: iconList,
 
-        leftCornerRadius: 32,
+              activeIndex: _bottomNavIndex,
 
-        rightCornerRadius: 32,
+              gapLocation: GapLocation.none,
 
-        gapLocation: GapLocation.center,
+              notchSmoothness: NotchSmoothness.defaultEdge,
 
-        notchSmoothness: NotchSmoothness.verySmoothEdge,
+              leftCornerRadius: 40,
 
-        backgroundColor: theme.colorScheme.surface,
+              rightCornerRadius: 40,
 
-        activeColor: theme.colorScheme.primary,
+              elevation: 0,
 
-        inactiveColor: theme.colorScheme.onSurface.withOpacity(0.5),
+              iconSize: 25,
 
-        iconSize: 28,
+              backgroundColor: theme.brightness == Brightness.light
+                  ? Colors.white
+                  : const Color(0xFF181818),
 
-        onTap: (index) {
-          setState(() {
-            _bottomNavIndex = index;
-          });
-        },
+              activeColor: theme.brightness == Brightness.light
+                  ? Colors.black
+                  : Colors.white,
+
+              inactiveColor: theme.brightness == Brightness.light
+                  ? Colors.black45
+                  : Colors.white54,
+
+              onTap: (index) {
+                // Index 2 adalah tombol tambah artikel
+
+                if (index == 2) {
+                  openCreateArticle();
+
+                  return;
+                }
+
+                setState(() {
+                  _bottomNavIndex = index;
+                });
+              },
+            ),
+          ),
+        ),
       ),
     );
   }

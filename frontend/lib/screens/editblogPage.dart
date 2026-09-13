@@ -4,10 +4,8 @@ import '../models/blogModel.dart';
 import '../models/categoryModel.dart';
 import '../services/apiService.dart';
 
-// Halaman untuk memperbarui artikel yang telah dipilih dari daftar artikel.
-// Data awal formulir berasal dari artikel yang diterima melalui constructor.
+// Halaman edit artikel Vivilia
 class EditBlogPage extends StatefulWidget {
-  // Artikel yang sedang diedit, termasuk identitas pemilik dan id-nya.
   final Blog article;
 
   const EditBlogPage({super.key, required this.article});
@@ -17,26 +15,22 @@ class EditBlogPage extends StatefulWidget {
 }
 
 class EditBlogPageState extends State<EditBlogPage> {
-  // Controller menyimpan nilai formulir yang dapat diubah user.
   final titleController = TextEditingController();
 
   final contentController = TextEditingController();
 
-  // Kategori terbaru dari server untuk pilihan saat penyuntingan.
   List<Category> categories = [];
 
   int? selectedCategory;
 
   String selectedStatus = "published";
 
-  // Mengendalikan indikator proses dan mencegah update berulang.
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Mengisi formulir dengan nilai artikel sebelum mengambil kategori.
     titleController.text = widget.article.title;
 
     contentController.text = widget.article.content;
@@ -50,7 +44,6 @@ class EditBlogPageState extends State<EditBlogPage> {
 
   Future<void> getCategories() async {
     try {
-      // Kategori dimuat ulang agar pilihan editor sesuai data backend.
       final result = await ApiService().getCategories();
 
       if (!mounted) return;
@@ -64,7 +57,6 @@ class EditBlogPageState extends State<EditBlogPage> {
   }
 
   Future<void> updateArticle() async {
-    // Artikel tidak dikirim jika kategori, judul, atau isi belum valid.
     if (selectedCategory == null) {
       ScaffoldMessenger.of(
         context,
@@ -86,7 +78,6 @@ class EditBlogPageState extends State<EditBlogPage> {
     });
 
     try {
-      // Mengirim perubahan artikel berdasarkan id artikel yang sedang diedit.
       await ApiService().updatePost(
         id: widget.article.id,
 
@@ -101,12 +92,7 @@ class EditBlogPageState extends State<EditBlogPage> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Article updated successfully")),
-      );
-
-      // Kembali ke daftar setelah update berhasil.
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to update article: $error")),
@@ -122,140 +108,209 @@ class EditBlogPageState extends State<EditBlogPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Edit Article",
+      backgroundColor: theme.brightness == Brightness.light
+          ? const Color(0xffF7F7F7)
+          : Colors.black,
 
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-
+      body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Form editor berisi nilai artikel yang dapat diperbarui user.
-              TextField(
-                controller: titleController,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
 
-                decoration: InputDecoration(
-                  labelText: "Title",
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
 
-                  labelStyle: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
+              children: [
+                const SizedBox(height: 25),
 
-              const SizedBox(height: 10),
+                Text(
+                  "Edit Article",
 
-              DropdownButtonFormField<int>(
-                value: selectedCategory,
-
-                decoration: InputDecoration(
-                  labelText: "Category",
-
-                  labelStyle: Theme.of(context).textTheme.bodyMedium,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
 
-                items: categories.map((category) {
-                  return DropdownMenuItem<int>(
-                    value: category.id,
+                const SizedBox(height: 6),
 
-                    child: Text(
-                      category.name,
+                Text(
+                  "Update your article information",
 
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  );
-                }).toList(),
-
-                onChanged: (value) {
-                  setState(() {
-                    selectedCategory = value;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 10),
-
-              TextField(
-                controller: contentController,
-
-                maxLines: 5,
-
-                decoration: InputDecoration(
-                  labelText: "Content",
-
-                  labelStyle: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              DropdownButtonFormField<String>(
-                value: selectedStatus,
-
-                decoration: InputDecoration(
-                  labelText: "Status",
-
-                  labelStyle: Theme.of(context).textTheme.bodyMedium,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                 ),
 
-                items: [
-                  DropdownMenuItem(
-                    value: "draft",
+                const SizedBox(height: 30),
 
-                    child: Text(
-                      "Draft",
+                Container(
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.light
+                        ? Colors.white
+                        : const Color(0xff181818),
 
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                    borderRadius: BorderRadius.circular(18),
                   ),
 
-                  DropdownMenuItem(
-                    value: "published",
+                  child: TextField(
+                    controller: titleController,
 
-                    child: Text(
-                      "Published",
+                    decoration: const InputDecoration(
+                      hintText: "Title",
 
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      prefixIcon: Icon(Icons.title),
+
+                      border: InputBorder.none,
+
+                      contentPadding: EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
-                ],
-
-                onChanged: (value) {
-                  setState(() {
-                    selectedStatus = value!;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 25),
-
-              SizedBox(
-                width: double.infinity,
-
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : updateArticle,
-
-                  child: isLoading
-                      ? const SizedBox(
-                          height: 20,
-
-                          width: 20,
-
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(
-                          "Update",
-
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 15),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.light
+                        ? Colors.white
+                        : const Color(0xff181818),
+
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+
+                  child: DropdownButtonFormField<int>(
+                    value: selectedCategory,
+
+                    decoration: const InputDecoration(
+                      hintText: "Category",
+
+                      prefixIcon: Icon(Icons.category_outlined),
+
+                      border: InputBorder.none,
+                    ),
+
+                    items: categories.map((category) {
+                      return DropdownMenuItem<int>(
+                        value: category.id,
+
+                        child: Text(category.name),
+                      );
+                    }).toList(),
+
+                    onChanged: (value) {
+                      setState(() {
+                        selectedCategory = value;
+                      });
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.light
+                        ? Colors.white
+                        : const Color(0xff181818),
+
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+
+                  child: TextField(
+                    controller: contentController,
+
+                    maxLines: 6,
+
+                    decoration: const InputDecoration(
+                      hintText: "Content",
+
+                      prefixIcon: Icon(Icons.article_outlined),
+
+                      border: InputBorder.none,
+
+                      contentPadding: EdgeInsets.all(16),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.light
+                        ? Colors.white
+                        : const Color(0xff181818),
+
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+
+                  child: DropdownButtonFormField<String>(
+                    value: selectedStatus,
+
+                    decoration: const InputDecoration(
+                      hintText: "Status",
+
+                      prefixIcon: Icon(Icons.publish_outlined),
+
+                      border: InputBorder.none,
+                    ),
+
+                    items: const [
+                      DropdownMenuItem(value: "draft", child: Text("Draft")),
+
+                      DropdownMenuItem(
+                        value: "published",
+
+                        child: Text("Published"),
+                      ),
+                    ],
+
+                    onChanged: (value) {
+                      setState(() {
+                        selectedStatus = value!;
+                      });
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                SizedBox(
+                  width: double.infinity,
+
+                  height: 52,
+
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : updateArticle,
+
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 22,
+
+                            width: 22,
+
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text("Update"),
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+              ],
+            ),
           ),
         ),
       ),

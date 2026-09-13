@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/blogModel.dart';
 import '../services/apiService.dart';
 
-// Halaman pencarian artikel berdasarkan teks yang dimasukkan user.
+// Halaman pencarian artikel
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
 
@@ -12,17 +12,13 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  // Menyimpan kata kunci yang digunakan untuk pencarian.
   final searchController = TextEditingController();
 
-  // Hasil pencarian yang ditampilkan setelah API merespons.
   List<Blog> blogs = [];
 
-  // Mengendalikan indikator loading saat permintaan pencarian berlangsung.
   bool isLoading = false;
 
   Future<void> searchArticle() async {
-    // Query kosong tidak dikirim agar tidak menghasilkan pencarian yang sia-sia.
     if (searchController.text.isEmpty) {
       return;
     }
@@ -32,13 +28,14 @@ class _SearchPageState extends State<SearchPage> {
     });
 
     try {
-      // API mengembalikan artikel yang cocok dengan kata kunci pencarian.
       final result = await ApiService().getPosts(search: searchController.text);
 
+ print("HASIL SEARCH : ${result.length}");
       setState(() {
         blogs = result;
       });
     } catch (error) {
+        print("SEARCH ERROR : $error");
       print(error);
     }
 
@@ -49,91 +46,177 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Search Articles",
+      backgroundColor: theme.brightness == Brightness.light
+          ? const Color(0xffF7F7F7)
+          : Colors.black,
 
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
 
-        child: Column(
-          children: [
-            // Pencarian dapat dijalankan melalui ikon atau tombol submit keyboard.
-            TextField(
-              controller: searchController,
+            children: [
+              const SizedBox(height: 25),
 
-              decoration: InputDecoration(
-                labelText: "Search article",
+              Text(
+                "Search",
 
-                labelStyle: Theme.of(context).textTheme.bodyMedium,
-
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.search),
-
-                  onPressed: searchArticle,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
               ),
 
-              onSubmitted: (value) {
-                searchArticle();
-              },
-            ),
+              const SizedBox(height: 6),
 
-            const SizedBox(height: 20),
+              Text(
+                "Find articles you want to read",
 
-            Expanded(
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : blogs.isEmpty
-                  ? Center(
-                      child: Text(
-                        "No articles found",
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+              ),
 
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: blogs.length,
+              const SizedBox(height: 25),
 
-                      itemBuilder: (context, index) {
-                        final blog = blogs[index];
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.brightness == Brightness.light
+                      ? Colors.white
+                      : const Color(0xff181818),
 
-                        return Card(
-                          child: ListTile(
-                            title: Text(
-                              blog.title,
+                  borderRadius: BorderRadius.circular(18),
+                ),
 
-                              style: Theme.of(context).textTheme.titleLarge,
+                child: TextField(
+                  controller: searchController,
+
+                  onSubmitted: (value) {
+                    searchArticle();
+                  },
+
+                  decoration: InputDecoration(
+                    hintText: "Search article",
+
+                    border: InputBorder.none,
+
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+
+                      vertical: 15,
+                    ),
+
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.search_rounded),
+
+                      onPressed: searchArticle,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              Text(
+                "Search Result",
+
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 15),
+
+              Expanded(
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : blogs.isEmpty
+                    ? const Center(child: Text("No articles found"))
+                    : ListView.builder(
+                        itemCount: blogs.length,
+
+                        itemBuilder: (context, index) {
+                          final blog = blogs[index];
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+
+                            padding: const EdgeInsets.all(18),
+
+                            decoration: BoxDecoration(
+                              color: theme.brightness == Brightness.light
+                                  ? Colors.white
+                                  : const Color(0xff181818),
+
+                              borderRadius: BorderRadius.circular(22),
+
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+
+                                  blurRadius: 10,
+
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
                             ),
 
-                            subtitle: Column(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
 
                               children: [
                                 Text(
-                                  "Author: ${blog.author}",
+                                  blog.categoryName,
 
-                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+
+                                    fontSize: 13,
+                                  ),
                                 ),
 
-                                Text(
-                                  "Category: ${blog.categoryName}",
+                                const SizedBox(height: 10),
 
-                                  style: Theme.of(context).textTheme.bodyMedium,
+                                Text(
+                                  blog.title,
+
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                Text(
+                                  blog.content,
+
+                                  maxLines: 2,
+
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                Text(
+                                  "By ${blog.author}",
+
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
